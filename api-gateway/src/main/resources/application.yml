@@ -1,0 +1,147 @@
+server:
+  port: 8000
+
+spring:
+  application:
+    name: api-gateway
+
+  output:
+    ansi:
+      enabled: always
+
+  main:
+    allow-bean-definition-overriding: true
+    web-application-type: reactive
+
+  cloud:
+    gateway:
+      routes:
+        ## organization-service Route
+        - id: organization-service
+          uri: lb://organization-service
+          predicates:
+            - Path=/api/organization/**
+        ## employee-service Route
+        - id: employee-service
+          uri: lb://employee-service
+          predicates:
+            - Path=/api/employee/**
+        ## recruitment-service Route
+        - id: recruitment-service
+          uri: lb://recruitment-service
+          predicates:
+            - Path=/api/recruitment/**
+        ## training-service Route
+        - id: training-service
+          uri: lb://training-service
+          predicates:
+            - Path=/api/training/**
+        ## leave-service Route
+        - id: leave-service
+          uri: lb://leave-service
+          predicates:
+            - Path=/api/leave/**
+        ## auth-service Route
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth/**
+        ## hr-planning-service Route
+        - id: hr-planning-service
+          uri: lb://hr-planning-service
+          predicates:
+            - Path=/api/hr-planning/**
+        ## promotion-service Route
+        - id: promotion-service
+          uri: lb://promotion-service
+          predicates:
+            - Path=/api/promotion/**
+        ## Discovery Service Route
+        - id: discovery-server
+          uri: http://${DISCOVERY_SERVER_HOST:localhost}:8761
+          predicates:
+            - Path=/eureka
+          filters:
+            - SetPath=/
+        ## Discovery Service Static Resources Route
+        - id: discovery-server-static
+          uri: http://${DISCOVERY_SERVER_HOST:localhost}:8761
+          predicates:
+            - Path=/eureka/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+
+logging:
+    level:
+      root: info
+      org.springframework.cloud.gateway.route.RouteDefinitionLocator: info
+      org.springframework.cloud.gateway: trace
+
+eureka:
+  instance:
+    prefer-ip-address: true
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    serviceUrl:
+      defaultZone: http://${DISCOVERY_SERVER_HOST:localhost}:8761/eureka/
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+  health:
+    circuitbreakers:
+      enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  zipkin:
+    tracing:
+      endpoint: http://${ZIPKIN_HOST:localhost}:9411/api/v2/spans
+  info:
+    git:
+      mode: full
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        register-health-indicator: true
+        sliding-window-type: count_based
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 5s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 5s
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 2s
+
+springdoc:
+  swagger-ui:
+    path: swagger-ui
+    oauth:
+      client-id: saas-client
+      client-secret: APHalzvUVsfz9Jffe5ZAZ1XImFwv5a8K

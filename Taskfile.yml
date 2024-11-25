@@ -1,0 +1,109 @@
+version: '3'
+
+vars:
+  GOOS: "{{default OS .GOOS}}"
+  MVNW: '{{if eq .GOOS "windows"}}mvnw.cmd{{else}}./mvnw{{end}}'
+  DC_DIR: "deployment/docker-compose"
+  INFRA_DC_FILE: "{{.DC_DIR}}/infra.yml"
+  APPS_DC_FILE: "{{.DC_DIR}}/apps.yml"
+  MONITORING_DC_FILE: "{{.DC_DIR}}/monitoring.yml"
+  SLEEP_CMD: '{{if eq .GOOS "windows"}}timeout{{else}}sleep{{end}}'
+
+tasks:
+  default:
+    cmds:
+      - task: test
+  test:
+    cmds:
+      - "{{.MVNW}} clean verify"
+
+  build:
+    cmds:
+      - task: build_jars
+      - task: build_images
+
+  build_jars:
+    cmds:
+      - "{{.MVNW}} clean package"
+
+  build_images:
+    cmds:
+      - "docker build -t discovery-server ./discovery-server"
+      - "docker build -t api-gateway ./api-gateway"
+      - "docker build -t config-server ./config-server"
+      - "docker build -t organization-service ./organization-service"
+      - "docker build -t employee-service ./employee-service"
+      - "docker build -t recruitment-service ./recruitment-service"
+      - "docker build -t training-service ./training-service"
+      - "docker build -t leave-service ./leave-service"
+      - "docker build -t auth-service ./auth-service"
+      - "docker build -t hr-planning-service ./hr-planning-service"
+      - "docker build -t promotion-service ./promotion-service"
+      #- "docker build -t notification-service ./notification-service"
+
+  start_infra:
+    cmds:
+      - "docker compose -f {{.INFRA_DC_FILE}} up -d"
+
+  stop_infra:
+    cmds:
+      - "docker compose -f {{.INFRA_DC_FILE}} stop"
+      - "docker compose -f {{.INFRA_DC_FILE}} rm -f"
+
+  restart_infra:
+    cmds:
+      - task: stop_infra
+      - task: sleep
+      - task: start_infra
+
+  start_app:
+    cmds:
+      - "docker compose -f {{.APPS_DC_FILE}} up -d"
+
+  stop_app:
+    cmds:
+      - "docker compose -f {{.APPS_DC_FILE}} stop"
+      - "docker compose -f {{.APPS_DC_FILE}} rm -f"
+
+  restart_app:
+    cmds:
+      - task: stop_app
+      - task: sleep
+      - task: start_app
+
+  start_monitoring:
+    cmds:
+      - "docker compose -f {{.MONITORING_DC_FILE}} up -d"
+
+  stop_monitoring:
+    cmds:
+      - "docker compose -f {{.MONITORING_DC_FILE}} stop"
+      - "docker compose -f {{.MONITORING_DC_FILE}} rm -f"
+
+  restart_monitoring:
+    cmds:
+      - task: stop_monitoring
+      - task: sleep
+      - task: start_monitoring
+
+  start:
+    #deps: [build]
+    cmds:
+      - "docker compose -f {{.INFRA_DC_FILE}} -f {{.APPS_DC_FILE}} up -d"
+
+  stop:
+    cmds:
+      - "docker compose -f {{.INFRA_DC_FILE}} -f {{.APPS_DC_FILE}} stop"
+      - "docker compose -f {{.INFRA_DC_FILE}} -f {{.APPS_DC_FILE}} rm -f"
+
+  restart:
+    cmds:
+      - task: stop
+      - task: sleep
+      - task: start
+
+  sleep:
+    vars:
+      DURATION: "{{default 5 .DURATION}}"
+    cmds:
+      - "{{.SLEEP_CMD}} {{.DURATION}}"

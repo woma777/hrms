@@ -1,0 +1,107 @@
+# global config
+global:
+  scrape_interval:     15s # Set the scrape interval to every 15 seconds. Default is every 1 minute.
+
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+    static_configs:
+      - targets: ['prometheus:9090']
+
+  - job_name: 'discovery-server'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'discovery-server:8761' ]
+        labels:
+          application: 'Discovery Server'
+
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['api-gateway:8000']
+        labels:
+          application: 'Api Gateway'
+
+  - job_name: 'config-server'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'config-server:8888' ]
+        labels:
+          application: 'Config Server'
+
+  - job_name: 'organization-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['organization-service:8181']
+        labels:
+          application: 'Organization Service'
+
+  - job_name: 'employee-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['employee-service:8180']
+        labels:
+          application: 'Employee Service'
+
+  - job_name: 'recruitment-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['recruitment-service:8182']
+        labels:
+          application: 'Recruitment Service'
+
+  - job_name: 'training-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: ['training-service:8183']
+        labels:
+          application: 'Training Service'
+
+  - job_name: 'leave-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'leave-service:8184' ]
+        labels:
+          application: 'Leave Service'
+
+  - job_name: 'auth-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'auth-service:8185' ]
+        labels:
+          application: 'Auth Service'
+
+  - job_name: 'hr-planning-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'hr-planning-service:8186' ]
+        labels:
+          application: 'Hr Planning Service'
+
+  - job_name: 'promotion-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'promotion-service:8187' ]
+        labels:
+          application: 'Promotion Service'
+
+  - job_name: 'notification-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 5s
+    static_configs:
+      - targets: [ 'notification-service:8188' ]
+        labels:
+          application: 'Notification Service'

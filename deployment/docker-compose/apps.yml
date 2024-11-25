@@ -1,0 +1,225 @@
+name: 'saas-backend'
+services:
+  # Discovery Server
+  discovery-server:
+    image: discovery-server:latest
+    container_name: discovery-server
+    ports:
+      - "8761:8761"
+    environment:
+      HOSTNAME: discovery-server
+      ZIPKIN_HOST: zipkin
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    labels:
+      logging: "promtail"
+
+  # Config Server
+  config-server:
+    image: config-server:latest
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    environment:
+      DISCOVERY_SERVER_HOST: discovery-server
+      ZIPKIN_HOST: zipkin
+    volumes:
+      - ../config:/deployment/config
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    labels:
+      logging: "promtail"
+
+  # API Gateway
+  api-gateway:
+    image: api-gateway:latest
+    container_name: api-gateway
+    ports:
+      - "8000:8000"
+    environment:
+      DISCOVERY_SERVER_HOST: discovery-server
+      ZIPKIN_HOST: zipkin
+    depends_on:
+      - discovery-server
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    labels:
+      logging: "promtail"
+
+  # Organization Service
+  organization-service:
+    image: organization-service:latest
+    container_name: organization-service
+    ports:
+      - "8181:8181"
+    environment:
+      CONFIG_SERVER_HOST: config-server
+      DB_URL: jdbc:mysql://mysql:3306/organization_db
+      DB_USERNAME: root
+      DB_PASSWORD: mysql
+    depends_on:
+      - config-server
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    labels:
+      logging: "promtail"
+
+  # Employee Service
+  employee-service:
+    image: employee-service:latest
+    container_name: employee-service
+    ports:
+      - "8180:8180"
+    environment:
+      CONFIG_SERVER_HOST: config-server
+      DB_URL: jdbc:mysql://mysql:3306/employee_db
+      DB_USERNAME: root
+      DB_PASSWORD: mysql
+    depends_on:
+      - config-server
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    labels:
+      logging: "promtail"
+
+  # Leave Service
+  leave-service:
+    image: leave-service:latest
+    container_name: leave-service
+    ports:
+      - "8184:8184"
+    environment:
+      CONFIG_SERVER_HOST: config-server
+      RABBITMQ_HOST: rabbitmq
+      DB_URL: jdbc:mysql://mysql:3306/leave_db
+      DB_USERNAME: root
+      DB_PASSWORD: mysql
+    depends_on:
+      - config-server
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    labels:
+      logging: "promtail"
+
+  # Recruitment Service
+  recruitment-service:
+    image: recruitment-service:latest
+    container_name: recruitment-service
+    ports:
+      - "8182:8182"
+    environment:
+      CONFIG_SERVER_HOST: config-server
+      DB_URL: jdbc:mysql://mysql:3306/recruitment_db
+      DB_USERNAME: root
+      DB_PASSWORD: mysql
+    depends_on:
+      - config-server
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    labels:
+      logging: "promtail"
+
+  # Training Service
+  training-service:
+    image: training-service:latest
+    container_name: training-service
+    ports:
+      - "8183:8183"
+    environment:
+      CONFIG_SERVER_HOST: config-server
+      DB_URL: jdbc:mysql://mysql:3306/training_db
+      DB_USERNAME: root
+      DB_PASSWORD: mysql
+    depends_on:
+      - config-server
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    labels:
+      logging: "promtail"
+
+  # HR Planning Service
+  hr-planning-service:
+    image: hr-planning-service:latest
+    container_name: hr-planning-service
+    ports:
+      - "8186:8186"
+    environment:
+      CONFIG_SERVER_HOST: config-server
+      DB_URL: jdbc:mysql://mysql:3306/hr-planning_db
+      DB_USERNAME: root
+      DB_PASSWORD: mysql
+    depends_on:
+      - config-server
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    labels:
+      logging: "promtail"
+
+  # Auth Service
+  auth-service:
+    image: auth-service:latest
+    container_name: auth-service
+    ports:
+      - "8185:8185"
+    environment:
+      CONFIG_SERVER_HOST: config-server
+      DB_URL: jdbc:mysql://mysql:3306/auth_db
+      DB_USERNAME: root
+      DB_PASSWORD: mysql
+    depends_on:
+      - config-server
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    labels:
+      logging: "promtail"
+
+  # Promotion Service
+  promotion-service:
+    image: promotion-service:latest
+    container_name: promotion-service
+    ports:
+      - "8187:8187"
+    environment:
+      CONFIG_SERVER_HOST: config-server
+      DB_URL: jdbc:mysql://mysql:3306/promotion_db
+      DB_USERNAME: root
+      DB_PASSWORD: mysql
+    depends_on:
+      - config-server
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 700m
+    labels:
+      logging: "promtail"

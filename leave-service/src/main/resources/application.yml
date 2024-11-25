@@ -1,0 +1,50 @@
+server :
+  port : 8184
+
+spring :
+  application:
+    name: leave-service
+
+  config:
+    import: configserver:http://${CONFIG_SERVER_HOST:localhost}:8888
+
+  jpa :
+    hibernate :
+      ddl-auto : update
+    show-sql : true
+    properties :
+      hibernate :
+        format_sql : true
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/leave_db}?createDatabaseIfNotExist=true
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:mysql}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  servlet :
+    multipart :
+      enabled : true
+      file-size-threshold : 2KB
+      max-file-size : 10MB
+      max-request-size : 10MB
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: 5672
+    username: guest
+    password: guest
+
+leaves:
+  leave-events-exchange: leaves-exchange
+  requested-leaves-queue: requested-leaves-queue
+  approved-leaves-queue: approved-leaves-queue
+  rejected-leaves-queue: rejected leaves-queue
+  cancelled-leaves-queue: cancelled-leaves-queue
+
+  requested-leaves-routing-key: requested-leaves-key
+  approved-leaves-routing-key: approved-leaves-key
+  rejected-leaves-routing-key: rejected leaves-key
+  cancelled-leaves-routing-key: cancelled-leaves-key
+
+  publish-leave-events-job-cron: "*/5 * * * * *"
